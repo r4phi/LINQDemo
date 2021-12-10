@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace LINQDemo
 {
@@ -27,7 +28,7 @@ namespace LINQDemo
                               where name.Length > 5
                               orderby name descending
                               select name;
-            foreach(var name in sortedNames)
+            foreach (var name in sortedNames)
             {
                 Console.WriteLine(name);
             }
@@ -43,8 +44,8 @@ namespace LINQDemo
             Console.WriteLine("\n----Eigene Klasse-----");
             var sortedPerson = from p in Person.Factory()
                                where p.FirstName.StartsWith('A')
-                orderby p.FirstName descending 
-                orderby p.LastName ascending 
+                               orderby p.FirstName descending
+                               orderby p.LastName ascending
                                select p;
 
             var sortedPerson2 = Person.Factory()
@@ -53,10 +54,26 @@ namespace LINQDemo
                 .ThenBy(p => p.LastName); //bei mehreren OrderBy nacheinander muss ThenBy verwendet werden
 
             //Gruppierung
-            var groupedPersons = from p in Person.Factory()
-                group p by p.Age;
+            //var groupedPersons = from p in Person.Factory()
+            //    orderby p.Age // sortiert zuerst Personen, und gruppiert anschließend
+            //    group p by p.Age;
 
-            //Ausgabe der Gruppierung
+            var groupedPersons = from p in Person.Factory()
+                                 orderby p.Age
+                                 group p by p.Age
+                into personGroup
+                                 orderby personGroup.Key
+                                 select personGroup;
+
+            var groupedPersonsLambda = Person.Factory().GroupBy(p => p.Age).OrderBy(g => g.Key);
+
+            PrintGroupedPersons(groupedPersons);
+            Console.WriteLine("");
+            PrintGroupedPersons(groupedPersonsLambda);
+        }
+
+        private static void PrintGroupedPersons(IEnumerable<IGrouping<int, Person>> groupedPersons)
+        {
             foreach (var personGroup in groupedPersons)
             {
                 Console.WriteLine($"Alter: {personGroup.Key}; Anzahl: {personGroup.Count()}");
